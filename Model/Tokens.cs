@@ -4,11 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Model
+namespace Models
 {
     public class Tokens
     {
-
         public int Id { get; set; }
         public string Token { get; set; }
         public string UserId { get; set; }

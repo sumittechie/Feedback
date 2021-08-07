@@ -13,4 +13,8 @@
     <PackageReference Include="MySql.EntityFrameworkCore" Version="5.0.5" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Data\Data.csproj" />
+  </ItemGroup>
+
 </Project>
