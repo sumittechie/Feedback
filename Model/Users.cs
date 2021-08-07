@@ -1,11 +1,12 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using Models;
 using System.Collections.Generic;
 
-namespace Data.Identity
+namespace Models
 {
     public class Users : IdentityUser
     {
+        public string Name { get; set; }
+        public bool IsAdmin { get; set; }
         public List<Tokens> Tokens { get; set; }
     }
 

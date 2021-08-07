@@ -1,4 +1,4 @@
-﻿using Data.Identity;
+﻿
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -33,11 +33,28 @@ namespace Data
             builder.Entity<IdentityUserToken<string>>(x => x.Property(m => m.LoginProvider).HasMaxLength(stringMaxLength));
             builder.Entity<IdentityUserToken<string>>(x => x.Property(m => m.Name).HasMaxLength(stringMaxLength));
 
+
+            builder.Entity<Feedback>()
+                .Property(b => b.LastUpdated)
+                .HasDefaultValueSql("now()");
+
+            builder.Entity<FeedbackAssigned>()
+              .Property(b => b.LastUpdated)
+              .HasDefaultValueSql("now()");
+
+            builder.Entity<FeedbackReplys>()
+              .Property(b => b.LastUpdated)
+              .HasDefaultValueSql("now()");
+
         }
 
         #region DBSets
 
         public DbSet<Tokens> Tokens { get; set; }
+
+        public DbSet<Feedback> Feedback { get; set; }
+        public DbSet<FeedbackAssigned> FeedbackAssigned { get; set; }
+        public DbSet<FeedbackReplys> FeedbackReplys { get; set; }
 
         #endregion
     }
