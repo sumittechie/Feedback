@@ -33,19 +33,6 @@ namespace Data
             builder.Entity<IdentityUserToken<string>>(x => x.Property(m => m.LoginProvider).HasMaxLength(stringMaxLength));
             builder.Entity<IdentityUserToken<string>>(x => x.Property(m => m.Name).HasMaxLength(stringMaxLength));
 
-
-            builder.Entity<Feedback>()
-                .Property(b => b.LastUpdated)
-                .HasDefaultValueSql("now()");
-
-            builder.Entity<FeedbackAssigned>()
-              .Property(b => b.LastUpdated)
-              .HasDefaultValueSql("now()");
-
-            builder.Entity<FeedbackReplys>()
-              .Property(b => b.LastUpdated)
-              .HasDefaultValueSql("now()");
-
         }
 
         #region DBSets

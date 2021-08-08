@@ -24,14 +24,14 @@ namespace Api.Controllers
         private readonly JWTBearerTokenSettings _jwtBearerTokenSettings;
         private readonly UserManager<Users> _userManager;
         private readonly FeedbackDbContext _dbContext;
-        private readonly FeedbackManager _manager;
+        private readonly AuthenticateManager _manager;
 
         public AuthenticateController(IOptions<JWTBearerTokenSettings> jwtTokenOtions, UserManager<Users> userManager, FeedbackDbContext context)
         {
             _jwtBearerTokenSettings = jwtTokenOtions.Value;
             _userManager = userManager;
             _dbContext = context;
-            _manager = new FeedbackManager();
+            _manager = new AuthenticateManager();
         }
 
         [HttpPost]

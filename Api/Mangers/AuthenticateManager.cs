@@ -17,7 +17,7 @@ using System.Threading.Tasks;
 
 namespace Api.Mangers
 {
-    public class FeedbackManager
+    public class AuthenticateManager
     {
 
         public Tokens GetValidRefreshToken(string token, Users identityUser)

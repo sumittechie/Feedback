@@ -3,14 +3,16 @@ using System;
 using Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Data.Migrations
 {
     [DbContext(typeof(FeedbackDbContext))]
-    partial class FeedbackDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210807170804_CorrectedDefaultValue")]
+    partial class CorrectedDefaultValue
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -164,7 +166,8 @@ namespace Data.Migrations
                         .HasColumnType("varchar(255)");
 
                     b.Property<DateTime>("LastUpdated")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime")
+                        .HasDefaultValueSql("NOW()");
 
                     b.Property<string>("Question")
                         .HasColumnType("text");
@@ -187,7 +190,8 @@ namespace Data.Migrations
                         .HasColumnType("int");
 
                     b.Property<DateTime>("LastUpdated")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime")
+                        .HasDefaultValueSql("NOW()");
 
                     b.Property<string>("UsersId")
                         .HasColumnType("varchar(767)");
@@ -217,7 +221,8 @@ namespace Data.Migrations
                         .HasColumnType("int");
 
                     b.Property<DateTime>("LastUpdated")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime")
+                        .HasDefaultValueSql("NOW()");
 
                     b.HasKey("Id");
 

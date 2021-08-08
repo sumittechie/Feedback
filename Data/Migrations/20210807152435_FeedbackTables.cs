@@ -16,7 +16,7 @@ namespace Data.Migrations
                         .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
                     Question = table.Column<string>(type: "text", nullable: true),
                     CreatedBy = table.Column<string>(type: "varchar(255)", maxLength: 255, nullable: true),
-                    LastUpdated = table.Column<DateTime>(type: "datetime", nullable: false, defaultValueSql: "now()")
+                    LastUpdated = table.Column<DateTime>(type: "datetime", nullable: false, defaultValueSql: "NOW()")
                 },
                 constraints: table =>
                 {
@@ -32,7 +32,7 @@ namespace Data.Migrations
                     FeedbackId = table.Column<int>(type: "int", nullable: false),
                     UsersId = table.Column<string>(type: "varchar(767)", nullable: true),
                     CreatedBy = table.Column<string>(type: "text", nullable: true),
-                    LastUpdated = table.Column<DateTime>(type: "datetime", nullable: false, defaultValueSql: "now()")
+                    LastUpdated = table.Column<DateTime>(type: "datetime", nullable: false, defaultValueSql: "NOW()")
                 },
                 constraints: table =>
                 {
@@ -60,7 +60,7 @@ namespace Data.Migrations
                     FeedbackAssignedId = table.Column<int>(type: "int", nullable: false),
                     Answer = table.Column<string>(type: "text", nullable: true),
                     CreatedBy = table.Column<string>(type: "text", nullable: true),
-                    LastUpdated = table.Column<DateTime>(type: "datetime", nullable: false, defaultValueSql: "now()")
+                    LastUpdated = table.Column<DateTime>(type: "datetime", nullable: false, defaultValueSql: "NOW()")
                 },
                 constraints: table =>
                 {
