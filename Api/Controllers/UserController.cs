@@ -5,6 +5,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using Models;
 using System;
+using System.Security.Authentication;
+using System.Security.Claims;
 
 namespace Api.Controllers
 {
@@ -26,13 +28,25 @@ namespace Api.Controllers
         {
             try
             {
-                var users = _dbContext.Users.Select(user => new { id = user.Id, name = $"{user.Name} [{user.Email}]" }).ToList();
+                var users = _dbContext.Users
+                        .Where(u => u.Id != CurrentUserId())
+                        .Select(user => new { id = user.Id, name = $"{user.Name} [{user.Email}]" }).ToList();
+
                 return Ok(new ApiResponse { Error = false, Data = users });
             }
             catch (Exception ex)
             {
                 return Ok(new ApiResponse { Error = true, Message = ex.Message.ToString() });
             }
+        }
+
+        private string CurrentUserId()
+        {
+            if (!User.Identity.IsAuthenticated)
+                throw new AuthenticationException();
+
+            return User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+
         }
     }
 }

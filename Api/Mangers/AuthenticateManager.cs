@@ -55,9 +55,10 @@ namespace Api.Mangers
             {
                 Subject = new ClaimsIdentity(new Claim[]
                 {
-                    new Claim(ClaimTypes.Name, identityUser.UserName.ToString()),
+                    new Claim(ClaimTypes.Name, identityUser.Name),
                     new Claim(ClaimTypes.Email, identityUser.Email),
-                    new Claim(ClaimTypes.Role, identityUser.IsAdmin ? "Admin": "User")
+                    new Claim(ClaimTypes.Role, identityUser.IsAdmin ? "Admin": "User"),
+                    new Claim(ClaimTypes.NameIdentifier, identityUser.Id)
                 }),
                 Expires = DateTime.Now.AddSeconds(jwtBearerTokenSettings.ExpiryTimeInSeconds),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),

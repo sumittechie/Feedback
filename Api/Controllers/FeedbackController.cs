@@ -7,12 +7,14 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using Models.ViewModels;
+using System.Security.Claims;
+using System.Security.Authentication;
 
 namespace Api.Controllers
 {
-    [Route("[controller]")]
-    [ApiController]
     [Authorize]
+    [ApiController]
+    [Route("[controller]")]
     public class FeedbackController : ControllerBase
     {
 
@@ -94,24 +96,7 @@ namespace Api.Controllers
             try
             {
                 var currentUserId = GetUserId();
-                if (model.FeedbackId == 0)
-                {
-                    Feedback obj = new Feedback { Question = model.Question.Trim(), CreatedBy = currentUserId, LastUpdated = DateTime.Now };
-                    _dbContext.Feedback.Add(obj);
-                    _dbContext.SaveChanges();
-                    var feedbackId = obj.FeedbackId;
-
-                    if (model.Users.Count > 0)
-                    {
-                        foreach (var user in model.Users)
-                        {
-                            var feedbackAssignedObj = new FeedbackAssigned { FeedbackId = feedbackId, UsersId = user, CreatedBy = currentUserId, LastUpdated = DateTime.Now };
-                            _dbContext.FeedbackAssigned.Add(feedbackAssignedObj);
-                        }
-                        _dbContext.SaveChanges();
-                    }
-                }
-                else
+                if (model.FeedbackId.Value > 0)
                 {
                     var feedbackObj = _dbContext.Feedback.FirstOrDefault(fb => fb.FeedbackId == model.FeedbackId);
                     if (feedbackObj != null)
@@ -136,7 +121,7 @@ namespace Api.Controllers
 
                         var addAssignee = model.Users.Except(existingAssignees).ToList();
 
-                        if(addAssignee.Count > 0)
+                        if (addAssignee.Count > 0)
                         {
                             foreach (var user in addAssignee)
                             {
@@ -147,6 +132,23 @@ namespace Api.Controllers
 
                         _dbContext.SaveChanges();
 
+                    }
+                }
+                else
+                {
+                    Feedback obj = new Feedback { Question = model.Question.Trim(), CreatedBy = currentUserId, LastUpdated = DateTime.Now };
+                    _dbContext.Feedback.Add(obj);
+                    _dbContext.SaveChanges();
+                    var feedbackId = obj.FeedbackId;
+
+                    if (model.Users.Count > 0)
+                    {
+                        foreach (var user in model.Users)
+                        {
+                            var feedbackAssignedObj = new FeedbackAssigned { FeedbackId = feedbackId, UsersId = user, CreatedBy = currentUserId, LastUpdated = DateTime.Now };
+                            _dbContext.FeedbackAssigned.Add(feedbackAssignedObj);
+                        }
+                        _dbContext.SaveChanges();
                     }
                 }
 
@@ -183,12 +185,11 @@ namespace Api.Controllers
 
         private string GetUserId()
         {
-            //var token = HttpContext.Request.Cookies["refreshToken"];
-            //var identityUser = _dbContext.Users.Include(x => x.Tokens)
-            //    .FirstOrDefault(x => x.Tokens.Any(y => y.Token == token && y.UserId == x.Id));
-            //return identityUser.Id;
+            if (!User.Identity.IsAuthenticated)
+                throw new AuthenticationException();
 
-            return "9681abb8-ce8a-4eaf-bd3a-d69133018d02";
+            return User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+
         }
 
 

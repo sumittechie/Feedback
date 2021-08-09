@@ -87,6 +87,7 @@ namespace Api.Controllers
             {
                 Token = token,
                 role = identityUser.IsAdmin ? "admin" : "user",
+                name = identityUser.Name
             };
 
             return Ok(new ApiResponse { Error = false, Data = data });
