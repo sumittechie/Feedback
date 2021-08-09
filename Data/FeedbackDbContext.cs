@@ -15,14 +15,14 @@ namespace Data
     {
         public FeedbackDbContext(DbContextOptions<FeedbackDbContext> options) : base(options)
         {
-  
+
         }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
 
-            int stringMaxLength =255;
+            int stringMaxLength = 255;
             builder.Entity<IdentityUserClaim<string>>(x => x.Property(m => m.UserId).HasMaxLength(stringMaxLength));
             builder.Entity<IdentityUserRole<string>>(x => x.Property(m => m.UserId).HasMaxLength(stringMaxLength));
             builder.Entity<IdentityUserRole<string>>(x => x.Property(m => m.RoleId).HasMaxLength(stringMaxLength));
@@ -36,13 +36,9 @@ namespace Data
         }
 
         #region DBSets
-
         public DbSet<Tokens> Tokens { get; set; }
-
         public DbSet<Feedback> Feedback { get; set; }
-        public DbSet<FeedbackAssigned> FeedbackAssigned { get; set; }
-        public DbSet<FeedbackReplys> FeedbackReplys { get; set; }
-
+        public DbSet<Replies> Reply { get; set; }
         #endregion
     }
 }

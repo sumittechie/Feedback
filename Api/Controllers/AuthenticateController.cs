@@ -45,13 +45,19 @@ namespace Api.Controllers
                 return new BadRequestObjectResult(new { Message = "User Registration Failed" });
             }
 
+            var genederType = userDetails.Gender == "Male" ? "men" : "women";
+            var rand = new Random();
+            var photoId = rand.Next(1, 100);
+
             var identityUser = new Users()
             {
                 UserName = userDetails.Email,
                 Email = userDetails.Email,
                 Name = userDetails.Name,
                 PhoneNumber = userDetails.Mobile,
-                IsAdmin = false
+                IsAdmin = false,
+                Gender = userDetails.Gender,
+                Photo = $"https://randomuser.me/api/portraits/{genederType}/{photoId}.jpg"
             };
             var result = await _userManager.CreateAsync(identityUser, userDetails.Password);
             if (!result.Succeeded)
@@ -98,7 +104,7 @@ namespace Api.Controllers
         [Route("RefreshToken")]
         public IActionResult RefreshToken()
         {
-           
+
             var token = HttpContext.Request.Cookies["refreshToken"];
             var identityUser = _dbContext.Users.Include(x => x.Tokens)
                 .FirstOrDefault(x => x.Tokens.Any(y => y.Token == token && y.UserId == x.Id));

@@ -9,8 +9,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Data.Migrations
 {
     [DbContext(typeof(FeedbackDbContext))]
-    [Migration("20210807170804_CorrectedDefaultValue")]
-    partial class CorrectedDefaultValue
+    [Migration("20210809113532_added-profile-photo-for-user")]
+    partial class addedprofilephotoforuser
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -166,8 +166,7 @@ namespace Data.Migrations
                         .HasColumnType("varchar(255)");
 
                     b.Property<DateTime>("LastUpdated")
-                        .HasColumnType("datetime")
-                        .HasDefaultValueSql("NOW()");
+                        .HasColumnType("datetime");
 
                     b.Property<string>("Question")
                         .HasColumnType("text");
@@ -177,7 +176,7 @@ namespace Data.Migrations
                     b.ToTable("Feedback");
                 });
 
-            modelBuilder.Entity("Models.FeedbackAssigned", b =>
+            modelBuilder.Entity("Models.Replies", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -190,8 +189,10 @@ namespace Data.Migrations
                         .HasColumnType("int");
 
                     b.Property<DateTime>("LastUpdated")
-                        .HasColumnType("datetime")
-                        .HasDefaultValueSql("NOW()");
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("Reply")
+                        .HasColumnType("text");
 
                     b.Property<string>("UsersId")
                         .HasColumnType("varchar(767)");
@@ -202,33 +203,7 @@ namespace Data.Migrations
 
                     b.HasIndex("UsersId");
 
-                    b.ToTable("FeedbackAssigned");
-                });
-
-            modelBuilder.Entity("Models.FeedbackReplys", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    b.Property<string>("Answer")
-                        .HasColumnType("text");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("text");
-
-                    b.Property<int>("FeedbackAssignedId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("LastUpdated")
-                        .HasColumnType("datetime")
-                        .HasDefaultValueSql("NOW()");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("FeedbackAssignedId");
-
-                    b.ToTable("FeedbackReplys");
+                    b.ToTable("Reply");
                 });
 
             modelBuilder.Entity("Models.Tokens", b =>
@@ -316,6 +291,9 @@ namespace Data.Migrations
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("tinyint(1)");
 
+                    b.Property<string>("Photo")
+                        .HasColumnType("text");
+
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("text");
 
@@ -389,7 +367,7 @@ namespace Data.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Models.FeedbackAssigned", b =>
+            modelBuilder.Entity("Models.Replies", b =>
                 {
                     b.HasOne("Models.Feedback", "Feedback")
                         .WithMany()
@@ -404,17 +382,6 @@ namespace Data.Migrations
                     b.Navigation("Feedback");
 
                     b.Navigation("Users");
-                });
-
-            modelBuilder.Entity("Models.FeedbackReplys", b =>
-                {
-                    b.HasOne("Models.FeedbackAssigned", "FeedbackAssigned")
-                        .WithMany()
-                        .HasForeignKey("FeedbackAssignedId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("FeedbackAssigned");
                 });
 
             modelBuilder.Entity("Models.Tokens", b =>

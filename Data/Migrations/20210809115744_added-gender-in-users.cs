@@ -2,21 +2,22 @@
 
 namespace Data.Migrations
 {
-    public partial class AddedNameInAspnetUsertable : Migration
+    public partial class addedgenderinusers : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AddColumn<string>(
-                name: "Name",
+                name: "Gender",
                 table: "AspNetUsers",
-                type: "text",
+                type: "varchar(10)",
+                maxLength: 10,
                 nullable: true);
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "Name",
+                name: "Gender",
                 table: "AspNetUsers");
         }
     }

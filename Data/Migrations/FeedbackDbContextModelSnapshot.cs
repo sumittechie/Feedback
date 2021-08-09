@@ -174,7 +174,7 @@ namespace Data.Migrations
                     b.ToTable("Feedback");
                 });
 
-            modelBuilder.Entity("Models.FeedbackAssigned", b =>
+            modelBuilder.Entity("Models.Replies", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -189,6 +189,9 @@ namespace Data.Migrations
                     b.Property<DateTime>("LastUpdated")
                         .HasColumnType("datetime");
 
+                    b.Property<string>("Reply")
+                        .HasColumnType("text");
+
                     b.Property<string>("UsersId")
                         .HasColumnType("varchar(767)");
 
@@ -198,32 +201,7 @@ namespace Data.Migrations
 
                     b.HasIndex("UsersId");
 
-                    b.ToTable("FeedbackAssigned");
-                });
-
-            modelBuilder.Entity("Models.FeedbackReplys", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    b.Property<string>("Answer")
-                        .HasColumnType("text");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("text");
-
-                    b.Property<int>("FeedbackAssignedId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("LastUpdated")
-                        .HasColumnType("datetime");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("FeedbackAssignedId");
-
-                    b.ToTable("FeedbackReplys");
+                    b.ToTable("Reply");
                 });
 
             modelBuilder.Entity("Models.Tokens", b =>
@@ -282,6 +260,10 @@ namespace Data.Migrations
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("tinyint(1)");
 
+                    b.Property<string>("Gender")
+                        .HasMaxLength(10)
+                        .HasColumnType("varchar(10)");
+
                     b.Property<bool>("IsAdmin")
                         .HasColumnType("tinyint(1)");
 
@@ -310,6 +292,9 @@ namespace Data.Migrations
 
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("Photo")
+                        .HasColumnType("text");
 
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("text");
@@ -384,7 +369,7 @@ namespace Data.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Models.FeedbackAssigned", b =>
+            modelBuilder.Entity("Models.Replies", b =>
                 {
                     b.HasOne("Models.Feedback", "Feedback")
                         .WithMany()
@@ -399,17 +384,6 @@ namespace Data.Migrations
                     b.Navigation("Feedback");
 
                     b.Navigation("Users");
-                });
-
-            modelBuilder.Entity("Models.FeedbackReplys", b =>
-                {
-                    b.HasOne("Models.FeedbackAssigned", "FeedbackAssigned")
-                        .WithMany()
-                        .HasForeignKey("FeedbackAssignedId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("FeedbackAssigned");
                 });
 
             modelBuilder.Entity("Models.Tokens", b =>

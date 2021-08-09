@@ -2,22 +2,21 @@
 
 namespace Data.Migrations
 {
-    public partial class IsAdminColumnAdded : Migration
+    public partial class addedprofilephotoforuser : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<bool>(
-                name: "IsAdmin",
+            migrationBuilder.AddColumn<string>(
+                name: "Photo",
                 table: "AspNetUsers",
-                type: "tinyint(1)",
-                nullable: false,
-                defaultValue: false);
+                type: "text",
+                nullable: true);
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "IsAdmin",
+                name: "Photo",
                 table: "AspNetUsers");
         }
     }

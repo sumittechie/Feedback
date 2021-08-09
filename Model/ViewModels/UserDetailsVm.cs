@@ -21,5 +21,7 @@ namespace Models.ViewModels
         [Required]
         public string Password { get; set; }
 
+        public string Gender { get; set; }
+
     }
 }

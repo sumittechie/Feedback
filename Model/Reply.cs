@@ -7,15 +7,17 @@ using System.Threading.Tasks;
 
 namespace Models
 {
-    public class FeedbackAssigned
+    public class Replies
     {
         public int Id { get; set; }
- 
+
         public int FeedbackId { get; set; }
         public Feedback Feedback { get; set; }
 
         public string UsersId { get; set; }
         public Users Users { get; set; }
+
+        public string Reply { get; set; }
 
         public string CreatedBy { get; set; }
         public DateTime LastUpdated { get; set; }

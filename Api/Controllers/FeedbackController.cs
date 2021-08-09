@@ -51,7 +51,7 @@ namespace Api.Controllers
             try
             {
                 var feedback = _dbContext.Feedback.FirstOrDefault(row => row.FeedbackId == id);
-                var assignee = _dbContext.FeedbackAssigned.Join(_dbContext.Users,
+                var assignee = _dbContext.Reply.Join(_dbContext.Users,
                     fba => fba.UsersId,
                     us => us.Id,
                     (fba, us) => new { feedbackId = fba.FeedbackId, id = fba.UsersId, name = $"{us.Name} [{us.Email}]" })
@@ -106,7 +106,7 @@ namespace Api.Controllers
                         _dbContext.SaveChanges();
 
                         // Updating assinees
-                        var existingAssignees = _dbContext.FeedbackAssigned.Where(fba => fba.FeedbackId == model.FeedbackId).Select(fba => fba.UsersId).ToList();
+                        var existingAssignees = _dbContext.Reply.Where(fba => fba.FeedbackId == model.FeedbackId).Select(fba => fba.UsersId).ToList();
 
                         //Users need to removed from feedback
                         var removeAssignee = existingAssignees.Except(model.Users).ToList();
@@ -114,8 +114,8 @@ namespace Api.Controllers
                         {
                             foreach (var user in removeAssignee)
                             {
-                                var removeAssigneeObj = _dbContext.FeedbackAssigned.Where(fba => fba.UsersId == user && fba.FeedbackId == model.FeedbackId.Value).FirstOrDefault();
-                                _dbContext.FeedbackAssigned.Remove(removeAssigneeObj);
+                                var removeAssigneeObj = _dbContext.Reply.Where(fba => fba.UsersId == user && fba.FeedbackId == model.FeedbackId.Value).FirstOrDefault();
+                                _dbContext.Reply.Remove(removeAssigneeObj);
                             }
                         }
 
@@ -125,8 +125,8 @@ namespace Api.Controllers
                         {
                             foreach (var user in addAssignee)
                             {
-                                var feedbackAssignedObj = new FeedbackAssigned { FeedbackId = model.FeedbackId.Value, UsersId = user, CreatedBy = currentUserId, LastUpdated = DateTime.Now };
-                                _dbContext.FeedbackAssigned.Add(feedbackAssignedObj);
+                                var ReplyObj = new Replies { FeedbackId = model.FeedbackId.Value, UsersId = user, CreatedBy = currentUserId, LastUpdated = DateTime.Now };
+                                _dbContext.Reply.Add(ReplyObj);
                             }
                         }
 
@@ -145,8 +145,8 @@ namespace Api.Controllers
                     {
                         foreach (var user in model.Users)
                         {
-                            var feedbackAssignedObj = new FeedbackAssigned { FeedbackId = feedbackId, UsersId = user, CreatedBy = currentUserId, LastUpdated = DateTime.Now };
-                            _dbContext.FeedbackAssigned.Add(feedbackAssignedObj);
+                            var ReplyObj = new Replies { FeedbackId = feedbackId, UsersId = user, CreatedBy = currentUserId, LastUpdated = DateTime.Now };
+                            _dbContext.Reply.Add(ReplyObj);
                         }
                         _dbContext.SaveChanges();
                     }
