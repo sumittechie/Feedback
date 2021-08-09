@@ -25,13 +25,15 @@ namespace Api.Controllers
         private readonly UserManager<Users> _userManager;
         private readonly FeedbackDbContext _dbContext;
         private readonly AuthenticateManager _manager;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public AuthenticateController(IOptions<JWTBearerTokenSettings> jwtTokenOtions, UserManager<Users> userManager, FeedbackDbContext context)
+        public AuthenticateController(IOptions<JWTBearerTokenSettings> jwtTokenOtions, UserManager<Users> userManager, FeedbackDbContext context, IHttpContextAccessor httpContextAccessor)
         {
             _jwtBearerTokenSettings = jwtTokenOtions.Value;
             _userManager = userManager;
             _dbContext = context;
             _manager = new AuthenticateManager();
+            _httpContextAccessor = httpContextAccessor;
         }
 
         [HttpPost]
@@ -43,12 +45,13 @@ namespace Api.Controllers
                 return new BadRequestObjectResult(new { Message = "User Registration Failed" });
             }
 
-            var identityUser = new Users() { 
-                UserName = userDetails.Email, 
+            var identityUser = new Users()
+            {
+                UserName = userDetails.Email,
                 Email = userDetails.Email,
                 Name = userDetails.Name,
-                PhoneNumber = userDetails.Mobile,  
-                IsAdmin= false
+                PhoneNumber = userDetails.Mobile,
+                IsAdmin = false
             };
             var result = await _userManager.CreateAsync(identityUser, userDetails.Password);
             if (!result.Succeeded)
@@ -75,11 +78,18 @@ namespace Api.Controllers
                 || credentials == null
                 || (identityUser = await _manager.ValidateUser(credentials, _userManager)) == null)
             {
-                return new BadRequestObjectResult(new { Message = "Login failed" });
+                return Ok(new ApiResponse { Error = true, Message = "Invalid email or password" });
             }
 
             var token = GenerateTokens(identityUser);
-            return Ok(new { Token = token, Message = "Success" });
+
+            var data = new
+            {
+                Token = token,
+                role = identityUser.IsAdmin ? "admin" : "user",
+            };
+
+            return Ok(new ApiResponse { Error = false, Data = data });
         }
 
         [AllowAnonymous]
@@ -87,6 +97,7 @@ namespace Api.Controllers
         [Route("RefreshToken")]
         public IActionResult RefreshToken()
         {
+           
             var token = HttpContext.Request.Cookies["refreshToken"];
             var identityUser = _dbContext.Users.Include(x => x.Tokens)
                 .FirstOrDefault(x => x.Tokens.Any(y => y.Token == token && y.UserId == x.Id));
@@ -163,7 +174,8 @@ namespace Api.Controllers
                 HttpOnly = true,
                 Expires = DateTime.UtcNow.AddDays(7)
             };
-            HttpContext.Response.Cookies.Append("refreshToken", refreshToken.Token, cookieOptions);
+            _httpContextAccessor.HttpContext.Response.Cookies.Append("refreshToken", refreshToken.Token, cookieOptions);
+            //Response.Cookies.Append();
 
             // Save refresh token to database
             if (identityUser.Tokens == null)

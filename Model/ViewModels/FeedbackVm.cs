@@ -6,8 +6,11 @@ using System.Threading.Tasks;
 
 namespace Models.ViewModels
 {
-    class FeedbackVm
+    public class FeedbackVm
     {
+        public int? FeedbackId { get; set; }
+        public string Question { get; set; }
+        public List<string> Users { get; set; }
 
     }
 }

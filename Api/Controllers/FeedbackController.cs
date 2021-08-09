@@ -1,13 +1,12 @@
 ﻿using Data;
-using Microsoft.AspNetCore.Authorization;
+using Models;
+using System;
+using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using Models.ViewModels;
 
 namespace Api.Controllers
 {
@@ -18,10 +17,12 @@ namespace Api.Controllers
     {
 
         private readonly FeedbackDbContext _dbContext;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public FeedbackController(FeedbackDbContext dbContext)
+        public FeedbackController(FeedbackDbContext dbContext, IHttpContextAccessor httpContextAccessor)
         {
             _dbContext = dbContext;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         [HttpGet]
@@ -29,30 +30,43 @@ namespace Api.Controllers
         {
             try
             {
-                var feedbacks = _dbContext.Feedback.ToList();
-                return Ok(new { HasEror = false, Message = feedbacks });
+                var feedbacks = _dbContext.Feedback.Join(_dbContext.Users,
+                    fb => fb.CreatedBy,
+                    us => us.Id,
+                    (fb, us) => new { fb.FeedbackId, fb.Question, CreatedBy = us.Name, fb.LastUpdated });
+
+                return Ok(new ApiResponse { Error = false, Data = feedbacks });
             }
             catch (Exception ex)
             {
-                return new BadRequestObjectResult(new { HasError = true, Message = ex.Message.ToString() });
+                return Ok(new ApiResponse { Error = true, Message = ex.Message.ToString() });
             }
         }
 
-        [HttpGet("{id}")]        
+        [HttpGet("{id}")]
         public IActionResult Get(int id)
         {
             try
             {
                 var feedback = _dbContext.Feedback.FirstOrDefault(row => row.FeedbackId == id);
-                return Ok(new { HasEror = false, Message = feedback });
+                var assignee = _dbContext.FeedbackAssigned.Join(_dbContext.Users,
+                    fba => fba.UsersId,
+                    us => us.Id,
+                    (fba, us) => new { feedbackId = fba.FeedbackId, id = fba.UsersId, name = $"{us.Name} [{us.Email}]" })
+                    .Where(fba => fba.feedbackId == id).ToList();
+                var result = new
+                {
+                    Feedback = feedback,
+                    Assignee = assignee
+                };
+
+                return Ok(new ApiResponse { Error = false, Data = result });
             }
             catch (Exception ex)
             {
-                return new BadRequestObjectResult(new { HasError = true, Message = ex.Message.ToString() });
+                return Ok(new ApiResponse { Error = true, Message = ex.Message.ToString() });
             }
         }
-
-
 
         [HttpPost]
         public IActionResult Post(string feedback)
@@ -63,16 +77,89 @@ namespace Api.Controllers
 
                 _dbContext.Feedback.Add(obj);
                 _dbContext.SaveChanges();
-                return Ok(new { HasEror = false, Message = "Feedback created successfully" });
+                return Ok(new ApiResponse { Error = false, Data = "Feedback created successfully" });
             }
             catch (Exception ex)
             {
-                return new BadRequestObjectResult(new { HasError = true, Message = ex.Message.ToString() });
+                return Ok(new ApiResponse { Error = true, Message = ex.Message.ToString() });
             }
 
         }
 
-        [HttpDelete]
+
+        [HttpPost]
+        [Route("SaveFeedback")]
+        public IActionResult SaveFeedback([FromBody] FeedbackVm model)
+        {
+            try
+            {
+                var currentUserId = GetUserId();
+                if (model.FeedbackId == 0)
+                {
+                    Feedback obj = new Feedback { Question = model.Question.Trim(), CreatedBy = currentUserId, LastUpdated = DateTime.Now };
+                    _dbContext.Feedback.Add(obj);
+                    _dbContext.SaveChanges();
+                    var feedbackId = obj.FeedbackId;
+
+                    if (model.Users.Count > 0)
+                    {
+                        foreach (var user in model.Users)
+                        {
+                            var feedbackAssignedObj = new FeedbackAssigned { FeedbackId = feedbackId, UsersId = user, CreatedBy = currentUserId, LastUpdated = DateTime.Now };
+                            _dbContext.FeedbackAssigned.Add(feedbackAssignedObj);
+                        }
+                        _dbContext.SaveChanges();
+                    }
+                }
+                else
+                {
+                    var feedbackObj = _dbContext.Feedback.FirstOrDefault(fb => fb.FeedbackId == model.FeedbackId);
+                    if (feedbackObj != null)
+                    {
+
+                        feedbackObj.Question = model.Question;
+                        _dbContext.SaveChanges();
+
+                        // Updating assinees
+                        var existingAssignees = _dbContext.FeedbackAssigned.Where(fba => fba.FeedbackId == model.FeedbackId).Select(fba => fba.UsersId).ToList();
+
+                        //Users need to removed from feedback
+                        var removeAssignee = existingAssignees.Except(model.Users).ToList();
+                        if (removeAssignee.Count > 0)
+                        {
+                            foreach (var user in removeAssignee)
+                            {
+                                var removeAssigneeObj = _dbContext.FeedbackAssigned.Where(fba => fba.UsersId == user && fba.FeedbackId == model.FeedbackId.Value).FirstOrDefault();
+                                _dbContext.FeedbackAssigned.Remove(removeAssigneeObj);
+                            }
+                        }
+
+                        var addAssignee = model.Users.Except(existingAssignees).ToList();
+
+                        if(addAssignee.Count > 0)
+                        {
+                            foreach (var user in addAssignee)
+                            {
+                                var feedbackAssignedObj = new FeedbackAssigned { FeedbackId = model.FeedbackId.Value, UsersId = user, CreatedBy = currentUserId, LastUpdated = DateTime.Now };
+                                _dbContext.FeedbackAssigned.Add(feedbackAssignedObj);
+                            }
+                        }
+
+                        _dbContext.SaveChanges();
+
+                    }
+                }
+
+
+                return Ok(new ApiResponse { Error = false, Data = "Feedback created successfully" });
+            }
+            catch (Exception ex)
+            {
+                return Ok(new ApiResponse { Error = true, Message = ex.Message.ToString() });
+            }
+        }
+
+        [HttpDelete("{id}")]
         public IActionResult Delete(int id)
         {
             try
@@ -85,22 +172,23 @@ namespace Api.Controllers
                 _dbContext.Feedback.Remove(objFromDb);
                 _dbContext.SaveChanges();
 
-                return Ok(new { HasError = false, Message = "Successfully deleted" });
+                return Ok(new ApiResponse { Error = false, Data = "Feedback delete successfully" });
 
             }
             catch (Exception ex)
             {
-                return new BadRequestObjectResult(new { HasError = true, Message = ex.Message.ToString() });
+                return Ok(new ApiResponse { Error = true, Message = ex.Message.ToString() });
             }
         }
 
         private string GetUserId()
         {
-            var token = HttpContext.Request.Cookies["refreshToken"];
-            var identityUser = _dbContext.Users.Include(x => x.Tokens)
-                .FirstOrDefault(x => x.Tokens.Any(y => y.Token == token && y.UserId == x.Id));
+            //var token = HttpContext.Request.Cookies["refreshToken"];
+            //var identityUser = _dbContext.Users.Include(x => x.Tokens)
+            //    .FirstOrDefault(x => x.Tokens.Any(y => y.Token == token && y.UserId == x.Id));
+            //return identityUser.Id;
 
-            return identityUser.Id;
+            return "9681abb8-ce8a-4eaf-bd3a-d69133018d02";
         }
 
 
