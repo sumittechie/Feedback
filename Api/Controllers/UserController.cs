@@ -11,12 +11,14 @@ using Models.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using System.Collections.Generic;
 
 namespace Api.Controllers
 {
-    [Authorize]
+
     [ApiController]
     [Route("[controller]")]
+    [Authorize(Roles = "Admin")]
     public class UserController : ControllerBase
     {
         private readonly FeedbackDbContext _dbContext;
@@ -31,6 +33,7 @@ namespace Api.Controllers
 
         [HttpGet]
         [Route("dropdown")]
+        [Authorize]
         public IActionResult GetDropdownList()
         {
             try
@@ -66,16 +69,59 @@ namespace Api.Controllers
             return Ok(response);
         }
 
+        [HttpGet("{id}")]
+        public IActionResult Get(string id)
+        {
+            var response = new ApiResponse();
+            try
+            {
+                var user = _dbContext.Users.Where(u => u.Id == id).Select(us => new
+                {
+                    Id = us.Id,
+                    Name = us.Name,
+                    Email = us.Email,
+                    Mobile = us.PhoneNumber,
+                    IsAdmin = us.IsAdmin,
+                    Gender = us.Gender
+                })
+                    .FirstOrDefault();
+
+                response.Error = false;
+                response.Data = user;
+            }
+            catch (Exception ex)
+            {
+                response.Error = true;
+                response.Message = ex.Message.ToString();
+            }
+            return Ok(response);
+        }
 
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] UserPostVm vm)
         {
-
             try
             {
                 if (!string.IsNullOrEmpty(vm.Id))
                 {
-                    return Ok(new ApiResponse { Error = false, Data = "User created successfully" });
+                    var user = _dbContext.Users.Where(us => us.Id == vm.Id).FirstOrDefault();
+                    if (user != null)
+                    {
+                        user.IsAdmin = vm.IsAdmin;
+                        user.Name = vm.Name;
+                        user.UserName = vm.Name.Replace(" ", ".");
+                        user.NormalizedUserName = vm.Name.Replace(" ", ".").ToUpper();
+                        user.Gender = vm.Gender;
+                        user.PhoneNumber = vm.Mobile;
+                        user.Email = vm.Email;
+                        user.NormalizedEmail = vm.Email.ToUpper();
+                        _dbContext.SaveChanges();
+                        return Ok(new ApiResponse { Error = false, Data = "User created successfully" });
+                    }
+                    else
+                    {
+                        return Ok(new ApiResponse { Error = true, Data = "Invalid user detail for update" });
+                    }
                 }
                 else
                 {
@@ -90,7 +136,7 @@ namespace Api.Controllers
 
                     var identityUser = new Users()
                     {
-                        UserName = vm.Name.Replace(" ","."),
+                        UserName = vm.Name.Replace(" ", "."),
                         Email = vm.Email,
                         Name = vm.Name,
                         PhoneNumber = vm.Mobile,
@@ -101,13 +147,13 @@ namespace Api.Controllers
                     var result = await _userManager.CreateAsync(identityUser, vm.Password);
                     if (!result.Succeeded)
                     {
-                        var dictionary = new ModelStateDictionary();
+                        List<string> errors = new List<string>();
                         foreach (IdentityError error in result.Errors)
                         {
-                            dictionary.AddModelError(error.Code, error.Description);
+                            errors.Add(error.Description);
                         }
 
-                        return Ok(new ApiResponse { Error = true, Data = dictionary });
+                        return Ok(new ApiResponse { Error = true, Data = errors });
                     }
 
                     return Ok(new ApiResponse { Error = false, Data = "User created successfully" });
@@ -125,6 +171,36 @@ namespace Api.Controllers
 
         }
 
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(string id)
+        {
+            var response = new ApiResponse();
+
+            try
+            {
+                var user = _dbContext.Users.Where(u => u.Id == id).FirstOrDefault();
+                if (user != null)
+                {
+                    _dbContext.Users.Remove(user);
+                    _dbContext.SaveChanges();
+                    response.Error = false;
+                    response.Data = "User deleted successfully";
+                }
+                else
+                {
+                    response.Error = true;
+                    response.Data = "User not found for delete";
+                }
+            }
+            catch (Exception ex)
+            {
+                response.Error = true;
+                response.Message = ex.Message.ToString();
+            }
+            return Ok(response);
+
+        }
         private string CurrentUserId()
         {
             if (!User.Identity.IsAuthenticated)
