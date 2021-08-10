@@ -71,6 +71,38 @@ namespace Api.Controllers
         }
 
 
+        [HttpGet("{id}")]
+        public IActionResult GetReplies(int id)
+        {
+            var response = new ApiResponse();
+            try
+            {
+                var replies = _dbContext.Reply.Join(_dbContext.Users,
+                        r => r.UsersId,
+                        u => u.Id,
+                        (r, u) => new
+                        {
+                            r.Id,
+                            r.FeedbackId,
+                            r.Reply,
+                            r.LastUpdated,
+                            u.Name,
+                            u.Photo
+                        })
+                        .Where(r => r.FeedbackId == id).Select(r => new { r.Id, r.Name, r.Photo, r.Reply, r.LastUpdated }).ToList();
+
+                response.Error = false;
+                response.Data = replies;
+            }
+            catch (Exception ex)
+            {
+                response.Error = true;
+                response.Message = ex.Message.ToString();
+            }
+            return Ok(response);
+        }
+
+
         [HttpPost]
         public IActionResult PostReply([FromBody] PostReplyVm vm)
         {
