@@ -15,10 +15,9 @@ using System.Collections.Generic;
 
 namespace Api.Controllers
 {
-
+    [Authorize]
     [ApiController]
     [Route("[controller]")]
-    [Authorize(Roles = "Admin")]
     public class UserController : ControllerBase
     {
         private readonly FeedbackDbContext _dbContext;
@@ -33,7 +32,6 @@ namespace Api.Controllers
 
         [HttpGet]
         [Route("dropdown")]
-        [Authorize]
         public IActionResult GetDropdownList()
         {
             try
@@ -52,6 +50,7 @@ namespace Api.Controllers
 
 
         [HttpGet]
+        [Authorize(Roles = "Admin")]
         public IActionResult GetAll()
         {
             var response = new ApiResponse();
@@ -70,6 +69,7 @@ namespace Api.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize(Roles = "Admin")]
         public IActionResult Get(string id)
         {
             var response = new ApiResponse();
@@ -98,6 +98,7 @@ namespace Api.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Post([FromBody] UserPostVm vm)
         {
             try
@@ -173,6 +174,7 @@ namespace Api.Controllers
 
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(string id)
         {
             var response = new ApiResponse();

@@ -4,7 +4,7 @@ using MySql.EntityFrameworkCore.Metadata;
 
 namespace Data.Migrations
 {
-    public partial class initial : Migration
+    public partial class initialdeployment : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -29,6 +29,8 @@ namespace Data.Migrations
                     Id = table.Column<string>(type: "varchar(767)", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: true),
                     IsAdmin = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    Photo = table.Column<string>(type: "text", nullable: true),
+                    Gender = table.Column<string>(type: "varchar(10)", maxLength: 10, nullable: true),
                     UserName = table.Column<string>(type: "varchar(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "varchar(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "varchar(256)", maxLength: 256, nullable: true),

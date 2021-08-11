@@ -9,8 +9,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Data.Migrations
 {
     [DbContext(typeof(FeedbackDbContext))]
-    [Migration("20210809112922_initial")]
-    partial class initial
+    [Migration("20210810095030_initial-deployment")]
+    partial class initialdeployment
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -262,6 +262,10 @@ namespace Data.Migrations
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("tinyint(1)");
 
+                    b.Property<string>("Gender")
+                        .HasMaxLength(10)
+                        .HasColumnType("varchar(10)");
+
                     b.Property<bool>("IsAdmin")
                         .HasColumnType("tinyint(1)");
 
@@ -290,6 +294,9 @@ namespace Data.Migrations
 
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("Photo")
+                        .HasColumnType("text");
 
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("text");

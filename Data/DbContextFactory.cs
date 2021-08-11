@@ -13,7 +13,7 @@ namespace Data
         public FeedbackDbContext CreateDbContext(string[] args)
         {
             var dbContextBuilder = new DbContextOptionsBuilder<FeedbackDbContext>();
-            var connectionString = "server=127.0.0.1;database=FeedbackSys;uid=svlabs;password=Stars@5me;port=3308;ssl mode=none;";
+            var connectionString = "server=localhost;database=feedbacksys;uid=svlabs;password=Stars@5me$;port=3306; SSL Mode=None;";
             dbContextBuilder.UseMySQL(connectionString);
 
             return new FeedbackDbContext(dbContextBuilder.Options);

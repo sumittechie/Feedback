@@ -32,12 +32,24 @@ namespace Api.Controllers
         {
             try
             {
+                var role = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role).Value;
+
+                //Fetch all the feedbacks
                 var feedbacks = _dbContext.Feedback.Join(_dbContext.Users,
                     fb => fb.CreatedBy,
                     us => us.Id,
-                    (fb, us) => new { fb.FeedbackId, fb.Question, CreatedBy = us.Name, fb.LastUpdated });
+                    (fb, us) => new { fb.FeedbackId, fb.Question, CreatedBy = us.Name, fb.LastUpdated, us.Id }).ToList();
 
-                return Ok(new ApiResponse { Error = false, Data = feedbacks });
+                //If User type is not Admin show only that particular user feedbacks
+                if (role == "User")
+                {
+                    feedbacks = feedbacks.Where(r => r.Id == GetUserId()).ToList();
+                }
+
+                //creation result set with required columns/values
+                var result = feedbacks.Select(s => new { s.FeedbackId, s.Question, s.CreatedBy, s.LastUpdated }).ToList();
+
+                return Ok(new ApiResponse { Error = false, Data = result });
             }
             catch (Exception ex)
             {

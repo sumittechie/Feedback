@@ -93,7 +93,8 @@ namespace Api.Controllers
             {
                 Token = token,
                 role = identityUser.IsAdmin ? "admin" : "user",
-                name = identityUser.Name
+                name = identityUser.Name,
+                photo = identityUser.Photo
             };
 
             return Ok(new ApiResponse { Error = false, Data = data });
@@ -182,7 +183,6 @@ namespace Api.Controllers
                 Expires = DateTime.UtcNow.AddDays(7)
             };
             _httpContextAccessor.HttpContext.Response.Cookies.Append("refreshToken", refreshToken.Token, cookieOptions);
-            //Response.Cookies.Append();
 
             // Save refresh token to database
             if (identityUser.Tokens == null)
